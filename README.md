@@ -12,34 +12,34 @@ This will open an interactive shell.
 
 ## Add a word
 ```
-  > a
+>>> a
 (Input word to add) Päivä
 (Input meaning) day
 ```
 
 ## Search a word
 ```
-  > s
+>>> s
 (Input word to search) Päivä
 (found with meaning) day
 ```
 
 ## List words
 ```
-  > l
+>>> l
 päivä : day
 ```
 
 ## Remove a word
 ```
-  > r
+>>> r
 (Input word to delete) päivä
 (confirm: delete päivä? y/N) y
 ```
 
 ## Quit the Shell
 ```
-  > q
+>>> q
 ```
 
 # Dependencies
