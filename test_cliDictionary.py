@@ -23,7 +23,7 @@ class TestCliDictionary(unittest.TestCase):
         sys.stdin = open('simulatedInput_add_word.txt', 'r')
         # cliDictionary.input = lambda _: 'testword'
         cliDictionary.AddWord().execute()
-        self.assertEqual(db.data["testword"], 'testmeaning')
+        self.assertEqual(db.get("testword"), 'testmeaning')
         sys.stdin.close()
         sys.stdin = stdin
 
@@ -38,7 +38,7 @@ class TestCliDictionary(unittest.TestCase):
         stdin = sys.stdin
         sys.stdin = open('simulatedInput_add_existing_word.txt', 'r')
         cliDictionary.AddWord().execute()
-        self.assertEqual(db.data["testword"], 'testmeaning1')
+        self.assertEqual(db.get("testword"), 'testmeaning1')
         sys.stdin.close()
         sys.stdin = stdin
 
@@ -46,7 +46,7 @@ class TestCliDictionary(unittest.TestCase):
         stdin = sys.stdin
         sys.stdin = open('simulatedInput_dont_add_existing_word.txt', 'r')
         cliDictionary.AddWord().execute()
-        self.assertEqual(db.data["testword"], 'testmeaning1')
+        self.assertEqual(db.get("testword"), 'testmeaning1')
         sys.stdin.close()
         sys.stdin = stdin
 
@@ -55,14 +55,14 @@ class TestCliDictionary(unittest.TestCase):
         sys.stdin = open('simulatedInput_remove_word.txt', 'r')
         # cliDictionary.input = lambda _: 'testword'
         cliDictionary.RemoveWord().execute()
-        removed = "testword" not in db.data
-        self.assertEqual(removed, True)
+        exists = db.exists("testword")
+        self.assertEqual(exists, False)
         sys.stdin.close()
         sys.stdin = stdin
 
     def test_0501_store_db(self):
         self.test_0101_add_word()
-        db.store_db()
+        db._store_db()
 
         def cleanup_db_file():
             os.remove(TEST_DB_PATH)

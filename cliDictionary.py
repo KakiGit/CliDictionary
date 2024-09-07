@@ -43,10 +43,32 @@ class InMemoryDatabase(metaclass=Singleton):
         with open(self.DB_FILE) as f:
             self.data.update(json.loads(f.read()))
 
-    def store_db(self):
+    def _store_db(self):
         logger.debug("Saving data to {}".format(self.DB_FILE))
         with open(self.DB_FILE, "w+") as f:
             f.write(json.dumps(self.data))
+
+    def shutdown(self):
+        logger.debug("Shutting down database")
+        self._store_db()
+
+    def get(self, key):
+        return self.data.get(key)
+
+    def getKeys(self):
+        return self.data.keys()
+
+    def getAll(self):
+        return self.data.items()
+
+    def set(self, key, value):
+        self.data[key] = value
+
+    def exists(self, key):
+        return key in self.data
+
+    def remove(self, key):
+        return self.data.pop(key, None)
 
 
 class CliAction:
@@ -76,7 +98,7 @@ class CliAction:
 class ListWords(CliAction):
 
     def execute(self):
-        for key, value in sorted(self.db.data.items()):
+        for key, value in sorted(self.db.getAll()):
             print(key, ":", value)
 
 
@@ -85,15 +107,15 @@ class AddWord(CliAction):
     def execute(self):
         override = "y"
         word = self._inputFreeStyle("Input word to add").lower()
-        if word in self.db.data:
+        if self.db.exists(word):
             self.print("{} already exists in the dictionary.".format(word))
-            self.print(" Current meaning: {}".format(self.db.data[word]))
+            self.print(" Current meaning: {}".format(self.db.get(word)))
             override = self._inputWithChoise(
                     "Replace it with new meaning? y/N",
                     ["y", "Y", "n", "N"])
         if override == "y" or override == "Y":
             meaning = self._inputFreeStyle("Input meaning")
-            self.db.data[word] = meaning
+            self.db.set(word, meaning)
 
 
 class RemoveWord(CliAction):
@@ -105,7 +127,7 @@ class RemoveWord(CliAction):
                 "confirm: delete {}? y/N".format(word),
                 ["y", "Y", "n", "N"])
         if confirm == "y" or confirm == "Y":
-            self.db.data.pop(word, None)
+            self.db.remove(word)
 
 
 class SearchWord(CliAction):
@@ -141,7 +163,7 @@ class SearchWord(CliAction):
 
     def findSimilarWords(self, word, limit=3):
         words = []
-        for key in self.db.data.keys():
+        for key in self.db.getKeys():
             words.append((key, self.levenshtein_distance(word, key)))
         words = sorted(words, key=lambda x: x[1])
         logger.debug("{}".format(words))
@@ -149,7 +171,7 @@ class SearchWord(CliAction):
 
     def execute(self):
         word = self._inputFreeStyle("Input word to search").lower()
-        if word in self.db.data:
+        if self.db.exists(word):
             self.print("found with meaning: {}".format(self.db.data[word]))
         else:
             self.print(f"{word} not found. Looking for similar ones.")
@@ -159,7 +181,7 @@ class SearchWord(CliAction):
                 return
             self.print("Find these possible results")
             for w in words:
-                print(w, ":", self.db.data[w])
+                print(w, ":", self.db.get(w))
 
 
 class QuitProgram(CliAction):
@@ -207,7 +229,7 @@ if __name__ == "__main__":
     logger.setLevel(level=getattr(logging, args.log_level))
     logger.debug("starting with args {}".format(args))
     InMemoryDatabase(args.db_file)
-    atexit.register(InMemoryDatabase().store_db)
+    atexit.register(InMemoryDatabase().shutdown)
     ACTIONS = {
             "l": ListWords(),
             "a": AddWord(),
