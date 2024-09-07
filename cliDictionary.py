@@ -1,85 +1,142 @@
 #!/usr/bin/env python
 
-import json
-import sys
 from pathlib import Path
+import atexit
+import json
 import logging
+import sys
 
 
-imdb = {}
+class Singleton(type):
+    _instances = {}
 
-DB_FILE = Path("cli.db")
-
-
-def load_db():
-    if not DB_FILE.exists():
-        return
-    with open(DB_FILE) as f:
-        imdb.update(json.loads(f.read()))
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
-def store_db():
-    with open(DB_FILE, "w+") as f:
-        f.write(json.dumps(imdb))
+class InMemoryDatabase(metaclass=Singleton):
+
+    DB_FILE = Path("cli.db")
+
+    def __init__(self):
+        self.data = {}
+        self._load_db()
+
+    # def __del__(self):
+        # self.store_db()
+        # Interpreter shutdown will delete global variables
+        # or functions like open()
+        # Use atexit instead
+
+    def _load_db(self):
+        if not self.DB_FILE.exists():
+            return
+        with open(self.DB_FILE) as f:
+            self.data.update(json.loads(f.read()))
+
+    def store_db(self):
+        logging.info("Saving Database")
+        with open(self.DB_FILE, "w+") as f:
+            f.write(json.dumps(self.data))
 
 
-def list_words():
-    for key, value in sorted(imdb.items()):
-        print(key, ":", value)
+class CliAction:
+
+    def __init__(self):
+        self.db = InMemoryDatabase()
+
+    def execute(self):
+        raise "execute not Implemented"
+
+    def print(self, text):
+        print("({}) ".format(text))
+
+    def _inputFreeStyle(self, text):
+        return input("({}) ".format(text))
+
+    def _inputWithChoise(self, text, choices=None):
+        try:
+            while True:
+                userInput = input("({}) ".format(text))
+                if userInput in choices:
+                    return userInput
+        except Exception:
+            print("Navigating to main menu...")
 
 
-def add_word():
-    override = "y"
-    word = input("(Input word to add) ").lower()
-    if word in imdb:
-        override = input(
-                "({} already exists in the dictionary.".format(word) +
-                " Current meaning: {}\n".format(imdb[word]) +
-                "Replace it with new meaning? y/N) ")
-    if override == "y" or override == "Y":
-        meaning = input("(Input meaning) ")
-        imdb[word] = meaning
+class ListWords(CliAction):
+
+    def execute(self):
+        for key, value in sorted(self.db.data.items()):
+            print(key, ":", value)
 
 
-def search_word():
-    word = input("(Input word to search) ").lower()
-    if word in imdb:
-        print("(found with meaning) {}".format(imdb[word]))
-    else:
-        print("(not found) ")
+class AddWord(CliAction):
+
+    def execute(self):
+        override = "y"
+        word = self._inputFreeStyle("Input word to add").lower()
+        if word in self.db.data:
+            self.print("{} already exists in the dictionary.".format(word))
+            self.print(" Current meaning: {}".format(self.db.data[word]))
+            override = self._inputWithChoise(
+                    "Replace it with new meaning? y/N",
+                    ["y", "Y", "n", "N"])
+        if override == "y" or override == "Y":
+            meaning = self._inputFreeStyle("Input meaning")
+            self.db.data[word] = meaning
 
 
-def remove_word():
-    confirm = "N"
-    word = input("(Input word to delete) ")
-    confirm = input("(confirm: delete {}? y/N) ".format(word))
-    if confirm == "y" or confirm == "Y":
-        imdb.pop(word, None)
+class RemoveWord(CliAction):
+
+    def execute(self):
+        confirm = "N"
+        word = self._inputFreeStyle("Input word to delete")
+        confirm = self._inputWithChoise(
+                "confirm: delete {}? y/N".format(word),
+                ["y", "Y", "n", "N"])
+        if confirm == "y" or confirm == "Y":
+            self.db.data.pop(word, None)
 
 
-def quit_program():
-    sys.exit(0)
+class SearchWord(CliAction):
+
+    def execute(self):
+        word = self._inputFreeStyle("Input word to search").lower()
+        if word in self.db.data:
+            self.print("found with meaning: {}".format(self.db.data[word]))
+        else:
+            self.print("not found")
+
+
+class QuitProgram(CliAction):
+
+    def execute(self):
+        self.print("Exiting...")
+        sys.exit(0)
 
 
 ACTIONS = {
-        "l": list_words,
-        "a": add_word,
-        "s": search_word,
-        "r": remove_word,
-        "q": quit_program,
+        "l": ListWords(),
+        "a": AddWord(),
+        "s": SearchWord(),
+        "r": RemoveWord(),
+        "q": QuitProgram(),
 }
 
 
+atexit.register(InMemoryDatabase().store_db)
+
+
 if __name__ == "__main__":
-    load_db()
     try:
         while True:
             s = input(">>> ")
             if s in ACTIONS:
-                ACTIONS[s]()
+                ACTIONS[s].execute()
             else:
                 print("Error: only support l,a,s,r,q")
     except Exception:
         logging.exception("")
-    finally:
-        store_db()
