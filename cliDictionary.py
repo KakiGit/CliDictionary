@@ -213,6 +213,8 @@ if __name__ == "__main__":
             s = input(">>> ")
             if s in ACTIONS:
                 ACTIONS[s].execute()
+            elif s == "":
+                pass
             else:
                 print("Error: only support l,a,s,r,q")
         except KeyboardInterrupt:
