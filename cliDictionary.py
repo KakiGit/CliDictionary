@@ -190,6 +190,15 @@ def parse_args():
     return parser.parse_args()
 
 
+def print_usage():
+    print("These are the supported commands:")
+    print("l   list words in the dictionary")
+    print("a   add a word to the dictionary")
+    print("s   search a word in the dictionary")
+    print("r   remove a word from the dictionary")
+    print("q   quit")
+
+
 if __name__ == "__main__":
     args = parse_args()
     logging.basicConfig(stream=sys.stdout,
@@ -216,7 +225,7 @@ if __name__ == "__main__":
             elif s == "":
                 pass
             else:
-                print("Error: only support l,a,s,r,q")
+                print_usage()
         except KeyboardInterrupt:
             print("")
         except EOFError:
