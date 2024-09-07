@@ -109,12 +109,57 @@ class RemoveWord(CliAction):
 
 class SearchWord(CliAction):
 
+    def __init__(self):
+        super().__init__()
+        self.THRESHOLD = 3
+
+    @staticmethod
+    def levenshtein_distance(s1, s2):
+        # Create a matrix to store distances
+        distances = [[0 for _ in range(len(s2) + 1)] for _ in range(len(s1) + 1)]
+
+        # Initialize distances for the base cases
+        for i in range(len(s1) + 1):
+            distances[i][0] = i
+        for j in range(len(s2) + 1):
+            distances[0][j] = j
+
+        # Calculate distances
+        for i in range(1, len(s1) + 1):
+            for j in range(1, len(s2) + 1):
+                if s1[i - 1] == s2[j - 1]:
+                    cost = 0
+                else:
+                    cost = 1
+                distances[i][j] = min(distances[i - 1][j] + 1,     # Deletion
+                                      distances[i][j - 1] + 1,     # Insertion
+                                      distances[i - 1][j - 1] + cost)  # Substitution
+
+        # The final distance is in the bottom-right corner of the matrix
+        return distances[-1][-1]
+
+    def findSimilarWords(self, word, limit=3):
+        words = []
+        for key in self.db.data.keys():
+            if self.levenshtein_distance(word, key) <= self.THRESHOLD:
+                words.append(key)
+            if len(words) >= limit:
+                break
+        return words
+
     def execute(self):
         word = self._inputFreeStyle("Input word to search").lower()
         if word in self.db.data:
             self.print("found with meaning: {}".format(self.db.data[word]))
         else:
-            self.print("not found")
+            self.print(f"{word} not found. Looking for similar ones.")
+            words = self.findSimilarWords(word)
+            if len(words) == 0:
+                self.print("not found")
+                return
+            self.print("Find these possible results")
+            for w in words:
+                print(w, ":", self.db.data[w])
 
 
 class QuitProgram(CliAction):
