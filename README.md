@@ -38,7 +38,9 @@ This will open an interactive shell.
 ## List words
 ```
 >>> l
-päivä : day
+ Word              Meaning
+ ---------------   ----------
+ päivä             day
 ```
 
 ## Remove a word

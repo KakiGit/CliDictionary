@@ -34,8 +34,13 @@ class CliAction:
 class ListWords(CliAction):
 
     def execute(self):
-        for key, value in sorted(self.db.getAll()):
-            print(key, ":", value)
+        data = self.db.getAll()
+        maxKeyLength = max([len(key) for key, _ in data])
+        tableFormat = " {:<" + str(maxKeyLength) + "}   {}"
+        print(tableFormat.format("Word", "Meaning"))
+        print(tableFormat.format("-"*maxKeyLength, "-"*10))
+        for key, value in sorted(data):
+            print(tableFormat.format(key, value))
 
 
 class AddWord(CliAction):

@@ -31,7 +31,9 @@ class TestCliDictionary(unittest.TestCase):
     def test_0201_list_words(self):
         with patch('sys.stdout', new_callable=StringIO) as fake_out:
             cliDictionary.ListWords().execute()
-            self.assertEqual(fake_out.getvalue().strip(), "testword : testmeaning")
+            res = fake_out.getvalue()
+            correct = "testword" in res and "testmeaning" in res
+            self.assertEqual(correct, True)
             fake_out.truncate(0)
             fake_out.seek(0)
 
