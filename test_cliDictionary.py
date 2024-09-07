@@ -9,11 +9,12 @@ import json
 from pathlib import Path
 import atexit
 import os
+from databases import InMemoryDatabase
 
 
 TEST_DB_PATH = "test.db"
 
-db = cliDictionary.InMemoryDatabase(TEST_DB_PATH)
+db = InMemoryDatabase(TEST_DB_PATH)
 
 
 class TestCliDictionary(unittest.TestCase):
