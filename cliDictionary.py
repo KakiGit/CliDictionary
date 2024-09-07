@@ -142,11 +142,10 @@ class SearchWord(CliAction):
     def findSimilarWords(self, word, limit=3):
         words = []
         for key in self.db.data.keys():
-            if self.levenshtein_distance(word, key) <= self.THRESHOLD:
-                words.append(key)
-            if len(words) >= limit:
-                break
-        return words
+            words.append((key, self.levenshtein_distance(word, key)))
+        words = sorted(words, key=lambda x: x[1])
+        logger.debug("{}".format(words))
+        return [x[0] for x in words[:limit]]
 
     def execute(self):
         word = self._inputFreeStyle("Input word to search").lower()
