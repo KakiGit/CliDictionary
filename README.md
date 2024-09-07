@@ -5,7 +5,18 @@ A CLI tool for keeping a personal dictionary.
 # Usage
 
 ```bash
-$ ./cliDictionary.py
+$ ./cliDictionary.py -h
+usage: cliDictionary.py [-h] [-d DB_FILE] [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+
+A CLI based personal dictionary.
+
+options:
+  -h, --help            show this help message and exit
+  -d DB_FILE, --db-file DB_FILE
+                        Path to the dictionary DB. Default to
+                        ${CLIDICTIONARY_DIR}/cli.db
+  -l {DEBUG,INFO,WARNING,ERROR,CRITICAL}, --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Set the logging level
 ```
 
 This will open an interactive shell.

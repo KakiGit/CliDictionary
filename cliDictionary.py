@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
 from pathlib import Path
+import argparse
 import atexit
 import json
 import logging
+import os
 import sys
+
+logger = logging.getLogger(__name__)
 
 
 class Singleton(type):
@@ -18,9 +22,10 @@ class Singleton(type):
 
 class InMemoryDatabase(metaclass=Singleton):
 
-    DB_FILE = Path("cli.db")
-
-    def __init__(self):
+    def __init__(self, db_path=None):
+        if db_path:
+            self.DB_FILE = Path(db_path)
+        logger.debug("DB_FILE {}".format(self.DB_FILE))
         self.data = {}
         self._load_db()
 
@@ -31,13 +36,14 @@ class InMemoryDatabase(metaclass=Singleton):
         # Use atexit instead
 
     def _load_db(self):
+        logger.debug("loading data from {}".format(self.DB_FILE))
         if not self.DB_FILE.exists():
             return
         with open(self.DB_FILE) as f:
             self.data.update(json.loads(f.read()))
 
     def store_db(self):
-        logging.info("Saving Database")
+        logger.debug("Saving data to {}".format(self.DB_FILE))
         with open(self.DB_FILE, "w+") as f:
             f.write(json.dumps(self.data))
 
@@ -118,25 +124,55 @@ class QuitProgram(CliAction):
         sys.exit(0)
 
 
-ACTIONS = {
-        "l": ListWords(),
-        "a": AddWord(),
-        "s": SearchWord(),
-        "r": RemoveWord(),
-        "q": QuitProgram(),
-}
+DEFAULT_DB_PATH = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "cli.db",
+        )
 
 
-atexit.register(InMemoryDatabase().store_db)
+def parse_args():
+    parser = argparse.ArgumentParser(
+            prog=os.path.basename(__file__),
+            description="A CLI based personal dictionary.")
+    parser.add_argument("-d", "--db-file",
+                        default=DEFAULT_DB_PATH,
+                        help=f"Path to the dictionary DB. Default to {DEFAULT_DB_PATH}")
+    parser.add_argument("-l", "--log-level",
+                        default="INFO",
+                        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                        help="Set the logging level")
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    try:
-        while True:
+    args = parse_args()
+    logging.basicConfig(stream=sys.stdout,
+                        format='[%(asctime)s] %(levelname)s [%(filename)s.%(funcName)s:%(lineno)d] %(message)s',
+                        datefmt='%a, %d %b %Y %H:%M:%S',
+                        )
+    logger.setLevel(level=getattr(logging, args.log_level))
+    logger.debug("starting with args {}".format(args))
+    InMemoryDatabase(args.db_file)
+    atexit.register(InMemoryDatabase().store_db)
+    ACTIONS = {
+            "l": ListWords(),
+            "a": AddWord(),
+            "s": SearchWord(),
+            "r": RemoveWord(),
+            "q": QuitProgram(),
+    }
+
+    while True:
+        try:
             s = input(">>> ")
             if s in ACTIONS:
                 ACTIONS[s].execute()
             else:
                 print("Error: only support l,a,s,r,q")
-    except Exception:
-        logging.exception("")
+        except KeyboardInterrupt:
+            print("")
+        except EOFError:
+            print("")
+            sys.exit(0)
+        except Exception:
+            pass
