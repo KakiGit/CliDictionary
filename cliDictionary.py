@@ -223,4 +223,4 @@ if __name__ == "__main__":
             print("")
             sys.exit(0)
         except Exception:
-            pass
+            logger.exception("")
