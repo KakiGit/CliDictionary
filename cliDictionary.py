@@ -220,6 +220,16 @@ def print_usage():
     print("q   quit")
 
 
+def main_menu():
+    s = input(">>> ")
+    if s in ACTIONS:
+        ACTIONS[s].execute()
+    elif s == "":
+        pass
+    else:
+        print_usage()
+
+
 if __name__ == "__main__":
     args = parse_args()
     logging.basicConfig(stream=sys.stdout,
@@ -240,13 +250,7 @@ if __name__ == "__main__":
 
     while True:
         try:
-            s = input(">>> ")
-            if s in ACTIONS:
-                ACTIONS[s].execute()
-            elif s == "":
-                pass
-            else:
-                print_usage()
+            main_menu()
         except KeyboardInterrupt:
             print("")
         except EOFError:
