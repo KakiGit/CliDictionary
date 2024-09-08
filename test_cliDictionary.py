@@ -10,6 +10,7 @@ from pathlib import Path
 import atexit
 import os
 from databases import InMemoryDatabase
+import actions
 
 
 TEST_DB_PATH = "test.db"
@@ -78,6 +79,33 @@ class TestCliDictionary(unittest.TestCase):
             with open(TEST_DB_PATH, "r") as f:
                 data = json.loads(f.read())
         self.assertEqual(data, {"testword": "testmeaning"})
+
+    def test_0701_user_interface(self):
+
+        inputs = []
+
+        with open("simulatedInput_user_interface.txt") as f:
+            inputs.extend(f.read().strip().split("\n"))
+
+        with patch('sys.stdout', new_callable=StringIO) as fake_out:
+            stdin = sys.stdin
+            sys.stdin = open('simulatedInput_user_interface.txt', 'r')
+
+            # Simulate main loop
+            for inp in inputs:
+                self.assertEqual(
+                        inp in cliDictionary.ACTIONS, True,
+                        msg=f"{inp} not implemented")
+                action = cliDictionary.ACTIONS[inp]
+                action.execute = lambda _: print(action.__name__)
+
+                cliDictionary.main_menu()
+
+                correct = action.__name__ in fake_out.getvalue().strip()
+                self.assertEqual(correct, True,
+                                 msg=f"{inp} - {action.__name__} ERROR")
+            sys.stdin.close()
+            sys.stdin = stdin
 
 
 if __name__ == '__main__':
