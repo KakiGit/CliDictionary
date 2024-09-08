@@ -47,7 +47,7 @@ def print_usage():
 def main_menu():
     s = input(">>> ")
     if s in ACTIONS:
-        ACTIONS[s].execute()
+        ACTIONS[s]().execute()
     elif s == "":
         pass
     else:
@@ -64,19 +64,20 @@ def setup_logging(log_level):
     db_logger.setLevel(level=getattr(logging, log_level))
 
 
+ACTIONS = {
+        "l": ListWords,
+        "a": AddWord,
+        "s": SearchWord,
+        "r": RemoveWord,
+        "q": QuitProgram,
+}
+
 if __name__ == "__main__":
     args = parse_args()
     logger.debug("starting with args {}".format(args))
     setup_logging(args.log_level)
     InMemoryDatabase(args.db_file)
     atexit.register(InMemoryDatabase().shutdown)
-    ACTIONS = {
-            "l": ListWords(),
-            "a": AddWord(),
-            "s": SearchWord(),
-            "r": RemoveWord(),
-            "q": QuitProgram(),
-    }
 
     while True:
         try:
