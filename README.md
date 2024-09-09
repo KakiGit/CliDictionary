@@ -1,6 +1,6 @@
 # CLI Dictionary
 
-A CLI tool for keeping a personal dictionary.
+An AI capable CLI tool for keeping a personal dictionary.
 
 # Usage
 
