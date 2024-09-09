@@ -54,7 +54,7 @@ class ChatGPT(metaclass=Singleton):
                   project=self.projId,
                   api_key=self.apiKey,
                 )
-        self.db = InMemoryDatabase("testai.db")
+        self.db = InMemoryDatabase()
 
     def ask(self, msg):
         response = self.client.chat.completions.with_raw_response.create(
