@@ -35,6 +35,9 @@ class ListWords(CliAction):
 
     def execute(self):
         data = self.db.getAll()
+        if len(data) == 0:
+            self.print("No data in dictoinary")
+            return
         maxKeyLength = max([len(key) for key, _ in data])
         tableFormat = " {:<" + str(maxKeyLength) + "}   {}"
         print(tableFormat.format("Word", "Meaning"))
