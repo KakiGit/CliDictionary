@@ -22,7 +22,7 @@ class TestCliDictionary(unittest.TestCase):
 
     def test_0101_add_word(self):
         stdin = sys.stdin
-        sys.stdin = open('simulatedInput_add_word.txt', 'r')
+        sys.stdin = open('simulatedInputs/simulatedInput_add_word.txt', 'r')
         # cliDictionary.input = lambda _: 'testword'
         cliDictionary.AddWord().execute()
         self.assertEqual(db.get("testword"), 'testmeaning')
@@ -40,7 +40,7 @@ class TestCliDictionary(unittest.TestCase):
 
     def test_0301_add_existing(self):
         stdin = sys.stdin
-        sys.stdin = open('simulatedInput_add_existing_word.txt', 'r')
+        sys.stdin = open('simulatedInputs/simulatedInput_add_existing_word.txt', 'r')
         cliDictionary.AddWord().execute()
         self.assertEqual(db.get("testword"), 'testmeaning1')
         sys.stdin.close()
@@ -48,7 +48,7 @@ class TestCliDictionary(unittest.TestCase):
 
     def test_0302_dont_add_existing(self):
         stdin = sys.stdin
-        sys.stdin = open('simulatedInput_dont_add_existing_word.txt', 'r')
+        sys.stdin = open('simulatedInputs/simulatedInput_dont_add_existing_word.txt', 'r')
         cliDictionary.AddWord().execute()
         self.assertEqual(db.get("testword"), 'testmeaning1')
         sys.stdin.close()
@@ -56,7 +56,7 @@ class TestCliDictionary(unittest.TestCase):
 
     def test_0401_remove_word(self):
         stdin = sys.stdin
-        sys.stdin = open('simulatedInput_remove_word.txt', 'r')
+        sys.stdin = open('simulatedInputs/simulatedInput_remove_word.txt', 'r')
         # cliDictionary.input = lambda _: 'testword'
         cliDictionary.RemoveWord().execute()
         exists = db.exists("testword")
@@ -84,12 +84,12 @@ class TestCliDictionary(unittest.TestCase):
 
         inputs = []
 
-        with open("simulatedInput_user_interface.txt") as f:
+        with open("simulatedInputs/simulatedInput_user_interface.txt") as f:
             inputs.extend(f.read().strip().split("\n"))
 
         with patch('sys.stdout', new_callable=StringIO) as fake_out:
             stdin = sys.stdin
-            sys.stdin = open('simulatedInput_user_interface.txt', 'r')
+            sys.stdin = open('simulatedInputs/simulatedInput_user_interface.txt', 'r')
 
             # Simulate main loop
             for inp in inputs:
