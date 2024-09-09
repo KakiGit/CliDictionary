@@ -2,6 +2,12 @@
 
 An AI capable CLI tool for keeping a personal dictionary.
 
+# Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
 # Usage
 
 ```bash
