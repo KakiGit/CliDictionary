@@ -3,6 +3,7 @@
 from databases import InMemoryDatabase
 import logging
 import sys
+from ai_agents import ChatGPT
 
 logger = logging.getLogger(__name__)
 
@@ -133,3 +134,14 @@ class QuitProgram(CliAction):
     def execute(self):
         self.print("Exiting...")
         sys.exit(0)
+
+
+class AIMode(CliAction):
+
+    def __init__(self):
+        self.aiAgent = ChatGPT()
+
+    def execute(self):
+        question = self._inputFreeStyle("What would you like to ask from the AI?")
+        answer = self.aiAgent.ask(question)
+        self.aiAgent.parse(answer)
