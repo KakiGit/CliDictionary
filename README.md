@@ -74,7 +74,8 @@ AI Mode is based on OpenAI
 (What would you like to ask from the AI?)
 ```
 
-AI Mode is only available when specifying "--ai-mode" when running the cliDictionary.py
+AI Mode is only available when specifying "--ai-mode" when running the cliDictionary.py.
+
 By default, AI Mode reads config from openai.json and api\_key
 
 ### Example content of openai.json
