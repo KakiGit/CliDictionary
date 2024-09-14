@@ -118,15 +118,17 @@ class SearchWord(CliAction):
         word = self._inputFreeStyle("Input word to search").lower()
         if self.db.exists(word):
             self.print("found with meaning: {}".format(self.db.data[word]))
+            return
         else:
             self.print(f"{word} not found. Looking for similar ones.")
-            words = self.findSimilarWords(word)
-            if len(words) == 0:
-                self.print("not found")
-                return
-            self.print("Find these possible results")
-            for w in words:
-                print(w, ":", self.db.get(w))
+
+        words = self.findSimilarWords(word)
+        if len(words) == 0:
+            self.print("not found")
+            return
+        self.print("Find these possible results")
+        for w in words:
+            print(w, ":", self.db.get(w))
 
 
 class QuitProgram(CliAction):
