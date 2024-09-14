@@ -17,7 +17,7 @@ In json format.
 # Audience
 An application that only receives json input.
 # Response
-[{"operation": "", "word": "WORD1", meaning: "MEANING1"}, {"operation": "", "word": "WORD2", meaning: "MEANING2 "}, ]
+[{"operation": "", "word": "WORD1", "meaning": "MEANING1"}, {"operation": "", "word": "WORD2", "meaning": "MEANING2"}, ]
 # Context
 You are maintaining a dictionary for the user. You know the meaning of all the words in all human languages. You know the translation between any two languages.
 current dictionary contents:
