@@ -19,8 +19,15 @@ class CliAction:
     def print(self, text):
         print("({}) ".format(text))
 
-    def _inputFreeStyle(self, text):
-        return input("({}) ".format(text))
+    def _inputFreeStyle(self, text, allow_empty=True):
+        if allow_empty:
+            return input("({}) ".format(text))
+        while True:
+            userInput = input("({}) ".format(text))
+            if userInput:
+                return userInput
+            print("(Input cannot be empty)")
+
 
     def _inputWithChoise(self, text, choices=None):
         try:
@@ -59,7 +66,7 @@ class AddWord(CliAction):
                     "Replace it with new meaning? y/N",
                     ["y", "Y", "n", "N"])
         if override == "y" or override == "Y":
-            meaning = self._inputFreeStyle("Input meaning")
+            meaning = self._inputFreeStyle("Input meaning", allow_empty=False)
             self.db.set(word, meaning)
 
 
