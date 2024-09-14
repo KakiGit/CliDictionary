@@ -23,6 +23,8 @@ You are maintaining a dictionary for the user. You know the meaning of all the w
 current dictionary contents:
 """
 
+LOGGING_API_KEY_PREFIX_LENGTH = 5
+LOGGING_API_KEY_SUFFIX_LENGTH = 10
 
 class ChatGPT(metaclass=Singleton):
 
@@ -31,23 +33,9 @@ class ChatGPT(metaclass=Singleton):
         self.projId = None
         self.apiKey = None
         if idFile:
-            if not Path(idFile).exists():
-                logger.error("{} not found.".format(idFile))
-                logger.error('It shoud contain content {"projectId":"$project_id", "organizationId": "$organizationId"}')
-                raise
-            with open(idFile, "r") as f:
-                data = json.loads(f.read())
-                self.orgId = data["organizationId"]
-                self.projId = data["projectId"]
-                logger.debug("orgId {}. projId {}.".format(self.orgId, self.projId))
+            self._read_ids(idFile)
         if apiKeyFile:
-            if not Path(apiKeyFile).exists():
-                logger.error("{} not found.".format(idFile))
-                logger.error('It shoud contain the api_key as plain text in a single line')
-                raise
-            with open(apiKeyFile, "r") as f:
-                self.apiKey = f.read().strip()
-                logger.debug("apiKey {}...{}.".format(self.apiKey[:10], self.apiKey[len(self.apiKey)-10:]))
+            self._read_api_key(apiKeyFile)
 
         self.client = OpenAI(
                   organization=self.orgId,
@@ -55,6 +43,28 @@ class ChatGPT(metaclass=Singleton):
                   api_key=self.apiKey,
                 )
         self.db = InMemoryDatabase()
+
+    def _read_ids(self, id_file):
+        if not Path(id_file).exists():
+            logger.error("{} not found.".format(id_file))
+            logger.error('It shoud contain content {"projectId":"$project_id", "organizationId": "$organizationId"}')
+            raise
+        with open(id_file, "r") as f:
+            data = json.loads(f.read())
+            self.orgId = data["organizationId"]
+            self.projId = data["projectId"]
+            logger.debug("orgId {}. projId {}.".format(self.orgId, self.projId))
+
+    def _read_api_key(self, api_key_file):
+        if not Path(api_key_file).exists():
+            logger.error("{} not found.".format(api_key_file))
+            logger.error('It shoud contain the api_key as plain text in a single line')
+            raise
+        with open(api_key_file, "r") as f:
+            self.apiKey = f.read().strip()
+            logger.debug("apiKey {}...{}.".format(
+                self.apiKey[:LOGGING_API_KEY_PREFIX_LENGTH],
+                self.apiKey[len(self.apiKey)-LOGGING_API_KEY_SUFFIX_LENGTH:]))
 
     def ask(self, msg):
         response = self.client.chat.completions.with_raw_response.create(
