@@ -30,13 +30,10 @@ class CliAction:
 
 
     def _inputWithChoise(self, text, choices=None):
-        try:
-            while True:
-                userInput = input("({}) ".format(text))
-                if userInput in choices:
-                    return userInput
-        except Exception:
-            print("Navigating to main menu...")
+        while True:
+            userInput = input("({}) ".format(text))
+            if userInput in choices:
+                return userInput
 
 
 class ListWords(CliAction):
